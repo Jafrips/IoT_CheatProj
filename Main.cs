@@ -20,6 +20,8 @@ int m_bIsLocalPlayerController = 0x6C8;
 Vector3 Pos = new Vector3();
 Vector3 LocalPos = new Vector3();
 float Distance;
+// other vars
+String PlayerTeam = "";
 
 // get entity list
 IntPtr entityList = swed.ReadPointer(client, dwEntityList);
@@ -59,30 +61,28 @@ for (int i = 0; i < 64; i++) // 64 controllers
 
     // get player team
     uint team = swed.ReadUInt(currentPawn, m_iTeamNum);
+    if (team == 3)
+        PlayerTeam = "CT";
+    else if (team == 2)
+        PlayerTeam = "T";
 
     // get controller attributes
-    string name = swed.ReadString(currentController, m_iszPlayerName, 16); // 16 characters
-
-    // print them
-    Console.WriteLine($"{name}: {health}hp, team: {team}");
+    string name = swed.ReadString(currentController, m_iszPlayerName, 16); // 16 characters    
 
     ////////////////////////////
     // FINDING POSITION
     bool local = swed.ReadBool(currentController, m_bIsLocalPlayerController); // check if its local pawn
     if (local)
-    {
         LocalPos = swed.ReadVec(currentPawn, m_pos);
-    }
     else
     {
         Pos = swed.ReadVec(currentPawn, m_pos);
         Distance = Vector3.Distance(LocalPos, Pos);
-        Console.WriteLine($"Distance to player: {Distance}");
+        //Console.WriteLine($"Distance to player: {Distance}");
+        Console.WriteLine($"{name}: {health}hp, team: {PlayerTeam}, Distance: {Distance}");
     }
-    
-
     //Pos = swed.ReadVec(pawnHandle, m_pos);
     //Console.WriteLine($"x: {Pos.X}, y: {Pos.Y}, z: {Pos.Z}, local: {local}");
-
+    ////////////////////////////
 
 }
