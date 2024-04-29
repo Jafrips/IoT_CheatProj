@@ -99,7 +99,7 @@ void reconnect() {
     if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
       //client.publish("ReadyToRead", "True");
-	  client.subscribe("Danger-data");
+      //client.subscribe("Danger-data");
       client.subscribe("Server-data");
     } else {
       Serial.print("failed, rc=");
