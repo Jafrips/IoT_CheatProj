@@ -9,10 +9,10 @@ class Program
         while (true)
         {
             string brokerAddress = "cheatreciever.cloud.shiftr.io";
-            string clientId = "GOIDA"; // Вам нужно использовать свой клиентский идентификатор
-            string username = "cheatreciever"; // Ваш логин от Shiftr.io
-            string password = "Slsk3E6qcEI0mM84"; // Ваш пароль от Shiftr.io
-            string topic = "Danger-data"; // Топик, откуда вы хотите читать данные
+            string clientId = "GOIDA"; // any id (unique for server)
+            string username = "cheatreciever"; // Shiftr.io login
+            string password = "Slsk3E6qcEI0mM84"; // Shiftr.io password
+            string topic = "Danger-data"; // topic to read from
 
             MqttClient client = new MqttClient(brokerAddress);
             client.Connect(clientId, username, password);
