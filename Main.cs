@@ -51,7 +51,6 @@ for (int i = 0; i < 64; i++) // 64 controllers max on server
 
     // get pawn handle
     int pawnHandle = swed.ReadInt(currentController, m_hPlayerPawn);
-
     if (pawnHandle == 0)
         continue;
 
