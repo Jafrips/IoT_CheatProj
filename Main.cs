@@ -30,6 +30,7 @@ String PlayerTeam = "";
 String LocalPlayerTeam = "";
 bool IsSpotted = false;
 bool IsLocalPlayer = false;
+bool Danger = false; // for vibro engine
 
 while (true)
 {
@@ -101,6 +102,11 @@ while (true)
             //Console.WriteLine($"Distance to player: {Distance}");
 
             Console.WriteLine($"{name}: {health}hp, team: {PlayerTeam}, Distance: {Distance}, Spotted: {IsSpotted}");
+
+            if (Distance < 164 && IsSpotted == false)
+            {
+                Console.WriteLine("Danger");
+            }
         }
     }
     Console.WriteLine("-----------------------------------");
