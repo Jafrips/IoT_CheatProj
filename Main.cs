@@ -40,6 +40,9 @@ uint team = 0;
 string name = "";
 
 // MQTTnet variables
+string[] enemyDataCurrent;
+List<string[]>enemyDataTotal; // массив из массивов данных по каждому противнику
+
 var factory = new MqttFactory();
 var clientMqtt = factory.CreateMqttClient();
 
@@ -52,6 +55,8 @@ await clientMqtt.ConnectAsync(options);
 
 while (true)
 {
+    enemyDataTotal = new List<string[]>();
+
     // get entity list
     IntPtr entityList = swed.ReadPointer(client, dwEntityList);
 
@@ -60,7 +65,7 @@ while (true)
 
     // loop through entity list
     for (int i = 0; i < 64; i++) // 64 controllers max on server
-    {
+    {        
         if (listEntry == IntPtr.Zero) // skip iteration if entry invalid
             continue;
 
@@ -126,14 +131,19 @@ while (true)
                 Danger = true;
             else
                 Danger = false;
+
+            enemyDataCurrent = new string[3];
+            enemyDataCurrent[0] = name;
+            enemyDataCurrent[1] = health.ToString();
+            enemyDataCurrent[2] = Distance.ToString();
+
+            enemyDataTotal.Add(enemyDataCurrent);
         }
     }
 
     // MQTTnet PROCESSING (SENDING TO SERVER - shiftr.io)
-    var sendData = new List<string> { name, health.ToString(), Distance.ToString() };
-    // ДОРАБОТАТЬ - предусмотреть передачу массива по каждому врагу
-    // это как пример передачи массива через json
-    var jsonData = JsonConvert.SerializeObject(sendData);
+    //var sendData = new List<string> { name, health.ToString(), Distance.ToString() };
+    var jsonData = JsonConvert.SerializeObject(enemyDataTotal);
     var EnemyData = new MqttApplicationMessageBuilder()
         .WithTopic("Server-data")
         .WithPayload(jsonData)
@@ -147,6 +157,9 @@ while (true)
         .WithRetainFlag()
         .Build();
     await clientMqtt.PublishAsync(DangerData);
+
+    if (clientMqtt.IsConnected)
+        Console.WriteLine($"Данные успешно отправлены на сервер - {DateTime.Now}");
 
     // Задержка на 3 секунды
     Thread.Sleep(3000);
