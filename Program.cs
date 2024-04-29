@@ -41,7 +41,7 @@ string name = "";
 
 // MQTTnet variables
 string[] enemyDataCurrent;
-List<string[]>enemyDataTotal; // массив из массивов данных по каждому противнику
+List<string[]> enemyDataTotal; // массив из массивов данных по каждому противнику
 
 var factory = new MqttFactory();
 var clientMqtt = factory.CreateMqttClient();
@@ -56,6 +56,7 @@ await clientMqtt.ConnectAsync(options);
 while (true)
 {
     enemyDataTotal = new List<string[]>();
+    Danger = false;
 
     // get entity list
     IntPtr entityList = swed.ReadPointer(client, dwEntityList);
@@ -65,7 +66,7 @@ while (true)
 
     // loop through entity list
     for (int i = 0; i < 64; i++) // 64 controllers max on server
-    {        
+    {
         if (listEntry == IntPtr.Zero) // skip iteration if entry invalid
             continue;
 
@@ -129,8 +130,6 @@ while (true)
             // vibro engine processing trigger if enemy is close and unspotted
             if (Distance < 164 && IsSpotted == false)
                 Danger = true;
-            else
-                Danger = false;
 
             enemyDataCurrent = new string[3];
             enemyDataCurrent[0] = name;
@@ -150,7 +149,7 @@ while (true)
         .WithRetainFlag()
         .Build();
     await clientMqtt.PublishAsync(EnemyData);
-   
+
     var DangerData = new MqttApplicationMessageBuilder()
         .WithTopic("Danger-data")
         .WithPayload(Danger.ToString())
@@ -159,7 +158,7 @@ while (true)
     await clientMqtt.PublishAsync(DangerData);
 
     if (clientMqtt.IsConnected)
-        Console.WriteLine($"Данные успешно отправлены на сервер - {DateTime.Now}");
+        Console.WriteLine($"Данные отправлены на сервер - {DateTime.Now}");
 
     // Задержка на 3 секунды
     Thread.Sleep(3000);
