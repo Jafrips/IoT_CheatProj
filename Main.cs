@@ -31,73 +31,79 @@ String LocalPlayerTeam = "";
 bool IsSpotted = false;
 bool IsLocalPlayer = false;
 
-// get entity list
-IntPtr entityList = swed.ReadPointer(client, dwEntityList);
-
-// first entry into entity list
-IntPtr listEntry = swed.ReadPointer(entityList, 0x10); // we dont have any ID yet
-
-// loop through entity list
-for (int i = 0; i < 64; i++) // 64 controllers max on server
+while (true)
 {
-    if (listEntry == IntPtr.Zero) // skip iteration if entry invalid
-        continue;
+    // get entity list
+    IntPtr entityList = swed.ReadPointer(client, dwEntityList);
 
-    //get current controller
-    IntPtr currentController = swed.ReadPointer(listEntry, i * 0x78);
+    // first entry into entity list
+    IntPtr listEntry = swed.ReadPointer(entityList, 0x10); // we dont have any ID yet
 
-    if (currentController == IntPtr.Zero) // skip if controller invalid
-        continue;
-
-    // get pawn handle
-    int pawnHandle = swed.ReadInt(currentController, m_hPlayerPawn);
-    if (pawnHandle == 0)
-        continue;
-
-    // second entry, now we find the pawn !
-    // apply bitmask (0x7FFF) and shift bits by 9
-    IntPtr listEntry2 = swed.ReadPointer(entityList, 0x8 * ((pawnHandle & 0x7FFF) >> 9) + 0x10);
-
-    // read current pawn, apply bitmask to stay inside range
-    IntPtr currentPawn = swed.ReadPointer(listEntry2, 0x78 * (pawnHandle & 0x1FF));
-
-    // check if its local pawn (local player)
-    IsLocalPlayer = swed.ReadBool(currentController, m_bIsLocalPlayerController);
-
-    // get player team
-    uint team = swed.ReadUInt(currentPawn, m_iTeamNum);
-    if (team == 3)
-        PlayerTeam = "CT";
-    else if (team == 2)
-        PlayerTeam = "T";
-
-    if (IsLocalPlayer)
+    // loop through entity list
+    for (int i = 0; i < 64; i++) // 64 controllers max on server
     {
-        // finding position
-        LocalPos = swed.ReadVec(currentPawn, m_pos);
+        if (listEntry == IntPtr.Zero) // skip iteration if entry invalid
+            continue;
 
-        // get local player team
-        LocalPlayerTeam = PlayerTeam;
+        //get current controller
+        IntPtr currentController = swed.ReadPointer(listEntry, i * 0x78);
+
+        if (currentController == IntPtr.Zero) // skip if controller invalid
+            continue;
+
+        // get pawn handle
+        int pawnHandle = swed.ReadInt(currentController, m_hPlayerPawn);
+        if (pawnHandle == 0)
+            continue;
+
+        // second entry, now we find the pawn !
+        // apply bitmask (0x7FFF) and shift bits by 9
+        IntPtr listEntry2 = swed.ReadPointer(entityList, 0x8 * ((pawnHandle & 0x7FFF) >> 9) + 0x10);
+
+        // read current pawn, apply bitmask to stay inside range
+        IntPtr currentPawn = swed.ReadPointer(listEntry2, 0x78 * (pawnHandle & 0x1FF));
+
+        // check if its local pawn (local player)
+        IsLocalPlayer = swed.ReadBool(currentController, m_bIsLocalPlayerController);
+
+        // get player team
+        uint team = swed.ReadUInt(currentPawn, m_iTeamNum);
+        if (team == 3)
+            PlayerTeam = "CT";
+        else if (team == 2)
+            PlayerTeam = "T";
+
+        if (IsLocalPlayer)
+        {
+            // finding position
+            LocalPos = swed.ReadVec(currentPawn, m_pos);
+
+            // get local player team
+            LocalPlayerTeam = PlayerTeam;
+        }
+        else
+        {
+            // get pawn health
+            uint health = swed.ReadUInt(currentPawn, m_iHealth);
+            if (!(health > 0))
+                continue; // skip if not alive
+            else if (LocalPlayerTeam == PlayerTeam)
+                continue; // skip if its teammate
+
+            // check if spotted (bool)
+            IsSpotted = swed.ReadBool(currentPawn, m_entitySpottedState);
+
+            // get controller attributes
+            string name = swed.ReadString(currentController, m_iszPlayerName, 16); // 16 characters
+
+            Pos = swed.ReadVec(currentPawn, m_pos);
+            Distance = Vector3.Distance(LocalPos, Pos);
+            //Console.WriteLine($"Distance to player: {Distance}");
+
+            Console.WriteLine($"{name}: {health}hp, team: {PlayerTeam}, Distance: {Distance}, Spotted: {IsSpotted}");
+        }
     }
-    else
-    {
-        // get pawn health
-        uint health = swed.ReadUInt(currentPawn, m_iHealth);
-        if (!(health > 0))
-            continue; // skip if not alive
-        else if (LocalPlayerTeam == PlayerTeam)
-            continue; // skip if its teammate
-
-        // check if spotted (bool)
-        IsSpotted = swed.ReadBool(currentPawn, m_entitySpottedState);
-
-        // get controller attributes
-        string name = swed.ReadString(currentController, m_iszPlayerName, 16); // 16 characters
-
-        Pos = swed.ReadVec(currentPawn, m_pos);
-        Distance = Vector3.Distance(LocalPos, Pos);
-        //Console.WriteLine($"Distance to player: {Distance}");
-
-        Console.WriteLine($"{name}: {health}hp, team: {PlayerTeam}, Distance: {Distance}, Spotted: {IsSpotted}");
-    }
+    Console.WriteLine("-----------------------------------");
+    // Задержка на 3 секунды
+    Thread.Sleep(3000);
 }
