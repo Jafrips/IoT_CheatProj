@@ -11,10 +11,6 @@ const char* mqtt_password = "bpOX0ZqZfzYCywVM"; // Shiftr.io password
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-String incomingJson; // Переменная для хранения JSON-строки
-
-  DynamicJsonDocument doc(2000); // Укажите достаточно большой размер буфера JSON
-
 void setup_wifi() {
   delay(10);
   // We start by connecting to a WiFi network
@@ -48,7 +44,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   message[length] = '\0';
 
   // Десериализуем JSON
-  DynamicJsonDocument doc(1024); // Укажите достаточно большой размер буфера JSON
+  DynamicJsonDocument doc(1024); //размер буфера JSON
   DeserializationError error = deserializeJson(doc, message);
   if (error) {
     Serial.print("deserializeJson() failed: ");
