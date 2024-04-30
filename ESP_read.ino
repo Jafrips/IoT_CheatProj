@@ -4,12 +4,16 @@
 
 const char* ssid = "DIR-615-019a";
 const char* password = "33612423";
-const char* mqtt_server = "cheatreciever.cloud.shiftr.io";
-const char* mqtt_username = "cheatreciever"; //Shiftr.io login
-const char* mqtt_password = "Slsk3E6qcEI0mM84"; // Shiftr.io password
+const char* mqtt_server = "cscheatreciever.cloud.shiftr.io";
+const char* mqtt_username = "cscheatreciever"; //Shiftr.io login
+const char* mqtt_password = "bpOX0ZqZfzYCywVM"; // Shiftr.io password
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+String incomingJson; // Переменная для хранения JSON-строки
+
+  DynamicJsonDocument doc(2000); // Укажите достаточно большой размер буфера JSON
 
 void setup_wifi() {
   delay(10);
@@ -31,63 +35,37 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-void callback(char* topic, byte* message, unsigned int length)
-{
-  if (strcmp(topic, "Danger-data") == 0)
-  {
-    Serial.print("Danger-data recieved: ");
-    String dangerData = "";
-    for (int i=0; i<length; i++) {
-      dangerData += (char)message[i];
-    } Serial.println(dangerData);
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+
+  // Создаем буфер для хранения пришедших данных
+  char message[length + 1];
+  for (int i = 0; i < length; i++) {
+    message[i] = (char)payload[i];
   }
-  else if (strcmp(topic, "Server-data") == 0)
-  {
-    Serial.print("Server-data recieved: ");
+  message[length] = '\0';
 
-    // Преобразуем полученные данные в строку
-    String jsonString = "";
-    for (int i = 0; i < length; i++) {
-      jsonString += (char)message[i];
-    }
+  // Десериализуем JSON
+  DynamicJsonDocument doc(1024); // Укажите достаточно большой размер буфера JSON
+  DeserializationError error = deserializeJson(doc, message);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return;
+  }
 
-    // Создаем объект JsonDocument с достаточным размером буфера
-    StaticJsonDocument<2000> jsonDocument;
-    DeserializationError error = deserializeJson(jsonDocument, jsonString);
-    if (error) {
-      Serial.print("deserializeJson() failed: ");
-      Serial.println(error.f_str());
-      return;
-    }
-
-    // Получаем массив enemyDataTotal
-    JsonArray enemyDataTotal = jsonDocument["enemyDataTotal"];
-
-    // Итерируемся по массиву enemyDataTotal
-    for (JsonVariant enemyData : enemyDataTotal) {
-      // Проверяем, является ли элемент массивом строк
-      if (enemyData.is<JsonArray>()) {
-        // Разбираем массив строк
-        JsonArray enemyDataArray = enemyData.as<JsonArray>();
-        // Проверяем, имеет ли массив нужный размер
-        if (enemyDataArray.size() == 3) {
-          // Получаем элементы массива строк
-          String name = enemyDataArray[0];
-          int health = enemyDataArray[1].as<int>();
-          int distance = enemyDataArray[2].as<int>();
-          // Выводим значения
-          Serial.print("Name: ");
-          Serial.println(name);
-          Serial.print("Health: ");
-          Serial.println(health);
-          Serial.print("Distance: ");
-          Serial.println(distance);
-        }
-      }
-    }
-  } 
-  else
-    Serial.println("Unknown topic");
+  // Получаем значения из JSON
+  JsonArray entities = doc.as<JsonArray>();
+  for (JsonVariant entity : entities) {
+    String name = entity["Name"];
+    int health = entity["Health"];
+    Serial.print("Name: ");
+    Serial.println(name);
+    Serial.print("Health: ");
+    Serial.println(health);
+  }
 }
 
 
@@ -98,9 +76,7 @@ void reconnect() {
     // Attempt to connect
     if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
-      //client.publish("ReadyToRead", "True");
-      //client.subscribe("Danger-data");
-      client.subscribe("Server-data");
+      client.subscribe("ServerData");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
