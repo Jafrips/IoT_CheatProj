@@ -40,22 +40,21 @@ uint team = 0;
 string name = "";
 
 // MQTTnet variables
-string[] enemyDataCurrent;
-List<string[]> enemyDataTotal; // массив из массивов данных по каждому противнику
+List<Entity> Entities; // Entity - custom class
 
 var factory = new MqttFactory();
 var clientMqtt = factory.CreateMqttClient();
 
 var options = new MqttClientOptionsBuilder()
-    .WithTcpServer("cheatreciever.cloud.shiftr.io")
-    .WithCredentials("cheatreciever", "Slsk3E6qcEI0mM84")
+    .WithTcpServer("cscheatreciever.cloud.shiftr.io")
+    .WithCredentials("cscheatreciever", "bpOX0ZqZfzYCywVM")
     .Build();
 
 await clientMqtt.ConnectAsync(options);
 
 while (true)
 {
-    enemyDataTotal = new List<string[]>();
+    Entities = new List<Entity>();
     Danger = false;
 
     // get entity list
@@ -120,6 +119,7 @@ while (true)
 
             // get controller attributes
             name = swed.ReadString(currentController, m_iszPlayerName, 16); // 16 characters
+            name = name.Replace("\u0000", "");
 
             Pos = swed.ReadVec(currentPawn, m_pos);
             Distance = Vector3.Distance(LocalPos, Pos);
@@ -131,27 +131,22 @@ while (true)
             if (Distance < 164 && IsSpotted == false)
                 Danger = true;
 
-            enemyDataCurrent = new string[3];
-            enemyDataCurrent[0] = name;
-            enemyDataCurrent[1] = health.ToString();
-            enemyDataCurrent[2] = Distance.ToString();
-
-            enemyDataTotal.Add(enemyDataCurrent);
+            Entities.Add(new Entity { Name = name, Health = health.ToString() });
         }
     }
 
     // MQTTnet PROCESSING (SENDING TO SERVER - shiftr.io)
     //var sendData = new List<string> { name, health.ToString(), Distance.ToString() };
-    var jsonData = JsonConvert.SerializeObject(enemyDataTotal);
+    var jsonData = JsonConvert.SerializeObject(Entities);
     var EnemyData = new MqttApplicationMessageBuilder()
-        .WithTopic("Server-data")
+        .WithTopic("ServerData")
         .WithPayload(jsonData)
         .WithRetainFlag()
         .Build();
     await clientMqtt.PublishAsync(EnemyData);
 
     var DangerData = new MqttApplicationMessageBuilder()
-        .WithTopic("Danger-data")
+        .WithTopic("DangerData")
         .WithPayload(Danger.ToString())
         .WithRetainFlag()
         .Build();
