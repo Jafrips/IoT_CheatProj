@@ -15,14 +15,14 @@ Swed swed = new("cs2");
 IntPtr client = swed.GetModuleBase("client.dll");
 
 // offsets for entity list
-int dwEntityList = 0x18C6268;   //check 27.04.24
+int dwEntityList = 0x18C9E78;   // offsets
 int m_hPlayerPawn = 0x7E4;      // const
 int m_iHealth = 0x334;          // const
 int m_iszPlayerName = 0x638;    // const
 int m_iTeamNum = 0x3CB;         // const
-int m_pos = 0x127C;             // m_vOldOrigin, client.dll.cs check 27.04.24
-int m_bIsLocalPlayerController = 0x6C8;
-int m_entitySpottedState = 0x2278 + 0x8; // EntitySpottedState_t (spottedstate + mbspotted)
+int m_pos = 0xED8;              // client.dll
+int m_bIsLocalPlayerController = 0x6C8; // const
+int m_entitySpottedState = 0x2278 + 0x8; // EntitySpottedState_t (spottedstate + mbspotted)  // const
                                          // m_bSpotted = 0x8; // bool
                                          // m_bSpottedByMask = 0xC; // uint32[2]
 
