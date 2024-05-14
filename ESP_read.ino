@@ -36,31 +36,44 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.print("] ");
 
-  // Создаем буфер для хранения пришедших данных
-  char message[length + 1];
-  for (int i = 0; i < length; i++) {
-    message[i] = (char)payload[i];
-  }
-  message[length] = '\0';
+  if (strcmp(topic, "ServerData") == 0) {
+    // Создаем буфер для хранения пришедших данных
+    char message[length + 1];
+    for (int i = 0; i < length; i++) {
+      message[i] = (char)payload[i];
+    }
+    message[length] = '\0';
 
-  // Десериализуем JSON
-  DynamicJsonDocument doc(1024); //размер буфера JSON
-  DeserializationError error = deserializeJson(doc, message);
-  if (error) {
-    Serial.print("deserializeJson() failed: ");
-    Serial.println(error.c_str());
-    return;
-  }
+    // Десериализуем JSON
+    DynamicJsonDocument doc(1024); //размер буфера JSON
+    DeserializationError error = deserializeJson(doc, message);
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      return;
+    }
 
-  // Получаем значения из JSON
-  JsonArray entities = doc.as<JsonArray>();
-  for (JsonVariant entity : entities) {
-    String name = entity["Name"];
-    int health = entity["Health"];
-    Serial.print("Name: ");
-    Serial.println(name);
-    Serial.print("Health: ");
-    Serial.println(health);
+    // Получаем значения из JSON
+    JsonArray entities = doc.as<JsonArray>();
+    for (JsonVariant entity : entities) {
+      String name = entity["Name"];
+      int health = entity["Health"];
+      Serial.print("Name: ");
+      Serial.println(name);
+      Serial.print("Health: ");
+      Serial.println(health);
+    }
+  } else if (strcmp(topic, "DangerData") == 0) {
+      String messageString = "";
+      for (int i = 0; i < length; i++) {
+        messageString += (char)payload[i];
+      }
+
+      // Пример: преобразование строки в число и использование данных
+      int dangerLevel = messageString.toInt();
+      Serial.println("danger? " + String(dangerLevel));
+      // Делайте что-то с полученным уровнем опасности
+      
   }
 }
 
@@ -73,6 +86,7 @@ void reconnect() {
     if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
       client.subscribe("ServerData");
+      client.subscribe("DangerData");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
