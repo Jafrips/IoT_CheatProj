@@ -16,11 +16,17 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-const char* ssid = "TTK";
-const char* password = "Qazedc14";
+const char* ssid = "DIR-615-019a";
+const char* password = "33612423";
 const char* mqtt_server = "cscheatreciever.cloud.shiftr.io";
 const char* mqtt_username = "cscheatreciever";   //Shiftr.io login
 const char* mqtt_password = "bpOX0ZqZfzYCywVM";  // Shiftr.io password
+
+bool runMotor = true;
+int MotorPower = 0;
+bool IsDanger = false;
+int x = 10;
+int y = 15;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -48,16 +54,9 @@ void setup_wifi() {
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
-  Serial.print("] ");
-  int x = 10;
-  int y = 15;
+  Serial.print("]\n");
 
-  if (strcmp(topic, "ServerData") == 0) {
-
-    // Цвет дисплея
-    tft.fillScreen(ST77XX_BLACK);
-
-
+  if (strcmp(topic, "ServerData") == 0 || strcmp(topic, "MotorSetup") == 0) {
 
     // Создаем буфер для хранения пришедших данных
     char message[length + 1];
@@ -74,19 +73,30 @@ void callback(char* topic, byte* payload, unsigned int length) {
       Serial.println(error.c_str());
       return;
     }
+    
+    if (strcmp(topic, "ServerData") == 0) {
+      // Цвет дисплея
+      tft.fillScreen(ST77XX_BLACK);    
 
-    // Получаем значения из JSON
-    JsonArray entities = doc.as<JsonArray>();
-    for (JsonVariant entity : entities) {
-      String name = entity["Name"];
-      int health = entity["Health"];
+      // Получаем значения из JSON
+      JsonArray entities = doc.as<JsonArray>();
+      for (JsonVariant entity : entities) {
+        String name = entity["Name"];
+        Serial.println(name);
+        int health = entity["Health"];
+        Serial.println(health);
 
-      // Точка старта печати текста
-      tft.setCursor(x, y);
+        // Точка старта печати текста
+        tft.setCursor(x, y);
 
-      y += 20;
-      // Вывод строки на экран
-      tft.print(name + " " + String(health));
+        y += 20;
+        // Вывод строки на экран
+        tft.print(name + " " + String(health));
+      }
+    } else {
+      // Получение значений из JSON
+      runMotor = doc["isRun"];
+      MotorPower = doc["pwr"];
     }
   } else if (strcmp(topic, "DangerData") == 0) {
     String messageString = "";
@@ -95,13 +105,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
 
     // Пример: преобразование строки в число и использование данных
-    int dangerLevel = messageString.toInt();
-    Serial.println("danger? " + String(dangerLevel));
-    // Делайте что-то с полученным уровнем опасности
+    if (messageString == "True")
+      IsDanger = true;
 
     // Если противник рядом, включается вибромотор, иначе отключается
-    if (dangerLevel) {
-      analogWrite(D, 255);
+    if (IsDanger && runMotor) {
+      analogWrite(D, MotorPower);
     } else {
       analogWrite(D, 0);
     }
@@ -114,10 +123,11 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client_1", mqtt_username, mqtt_password)) {
+    if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
       client.subscribe("ServerData");
       client.subscribe("DangerData");
+      client.subscribe("MotorSetup");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
