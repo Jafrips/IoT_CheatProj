@@ -7,7 +7,7 @@
 #include <SPI.h>
 
 // Пин для вибромотора
-#define D 4
+#define D 5
 
 // Пины для дисплея
 #define TFT_CS 15
@@ -16,8 +16,8 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-const char* ssid = "DIR-615-019a";
-const char* password = "33612423";
+const char* ssid = "TTK";
+const char* password = "Qazedc14";
 const char* mqtt_server = "cscheatreciever.cloud.shiftr.io";
 const char* mqtt_username = "cscheatreciever";   //Shiftr.io login
 const char* mqtt_password = "bpOX0ZqZfzYCywVM";  // Shiftr.io password
@@ -25,8 +25,7 @@ const char* mqtt_password = "bpOX0ZqZfzYCywVM";  // Shiftr.io password
 bool runMotor = true;
 int MotorPower = 0;
 bool IsDanger = false;
-int x = 10;
-int y = 15;
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -55,6 +54,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("]\n");
+
+  int x = 10;
+  int y = 15;
 
   if (strcmp(topic, "ServerData") == 0 || strcmp(topic, "MotorSetup") == 0) {
 
@@ -107,6 +109,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     // Пример: преобразование строки в число и использование данных
     if (messageString == "True")
       IsDanger = true;
+    else
+      IsDanger = false;
 
     // Если противник рядом, включается вибромотор, иначе отключается
     if (IsDanger && runMotor) {
@@ -142,7 +146,8 @@ void setup() {
 
   // Пин вибромотора
   pinMode(D, OUTPUT);
-
+  analogWriteRange(255);
+  
   // Init ST7735S chip, black tab
   tft.initR(INITR_BLACKTAB);
 
