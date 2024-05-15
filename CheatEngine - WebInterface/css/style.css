@@ -1,0 +1,81 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: #1e2020;
+    color: #fff;
+}
+
+body {
+    font-family: "Oswald", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+}
+
+
+.container {
+    margin-top: 40px;
+    flex-direction: column;
+    width: 1200px;
+    height: 100vh;
+    align-items: center;
+    gap: 20px;
+}
+
+.header {
+    margin-top: 300px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Ползунок */
+.form-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #198754;
+    cursor: pointer;
+    box-shadow: 0 0 5px #198754;
+}
+
+.form-range::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #198754;
+    cursor: pointer;
+    box-shadow: 0 0 5px #198754;
+}
+
+/* Тень вокруг ползунка при фокусе */
+.form-range:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 10px #198754;
+}
+
+.form-range:focus::-moz-range-thumb {
+    box-shadow: 0 0 10px #198754;
+}
+
+.form-check-input {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25em;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    cursor: pointer;
+    outline: none;
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
