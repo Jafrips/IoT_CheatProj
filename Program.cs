@@ -14,13 +14,13 @@ Swed swed = new("cs2");
 //get client.dll
 IntPtr client = swed.GetModuleBase("client.dll");
 
-// offsets for entity list
-int dwEntityList = 0x18C9E78;   // offsets
+// offsets for entity list (CS2 version: Version : 1.40.0.0)
+int dwEntityList = 0x18C2D58;   // offsets
 int m_hPlayerPawn = 0x7E4;      // const
 int m_iHealth = 0x334;          // const
 int m_iszPlayerName = 0x638;    // const
 int m_iTeamNum = 0x3CB;         // const
-int m_pos = 0xED8;              // client.dll
+int m_pos = 0x127C;              // oldOrigin, client.dll
 int m_bIsLocalPlayerController = 0x6C8; // const
 int m_entitySpottedState = 0x2278 + 0x8; // EntitySpottedState_t (spottedstate + mbspotted)  // const
                                          // m_bSpotted = 0x8; // bool
@@ -47,6 +47,7 @@ var clientMqtt = factory.CreateMqttClient();
 
 var options = new MqttClientOptionsBuilder()
     .WithTcpServer("cscheatreciever.cloud.shiftr.io")
+    .WithClientId("КС Задрот")
     .WithCredentials("cscheatreciever", "bpOX0ZqZfzYCywVM")
     .Build();
 
