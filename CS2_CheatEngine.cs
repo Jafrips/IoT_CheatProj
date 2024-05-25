@@ -156,6 +156,6 @@ while (true)
     if (clientMqtt.IsConnected)
         Console.WriteLine($"Данные отправлены на сервер - {DateTime.Now}");
 
-    // Задержка на 3 секунды
-    Thread.Sleep(3000);
+    // Задержка на 0.5 секунды
+    Thread.Sleep(500);
 }
