@@ -105,8 +105,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     for (int i = 0; i < length; i++) {
       messageString += (char)payload[i];
     }
-
-    // Пример: преобразование строки в число и использование данных
+    // с сервера возвращается true / false в виде строки, а не bool
     if (messageString == "True")
       IsDanger = true;
     else
