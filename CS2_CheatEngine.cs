@@ -47,7 +47,7 @@ var clientMqtt = factory.CreateMqttClient();
 
 var options = new MqttClientOptionsBuilder()
     .WithTcpServer("cscheatreciever.cloud.shiftr.io")
-    .WithClientId("КС Задрот")
+    .WithClientId("CS Client")
     .WithCredentials("cscheatreciever", "bpOX0ZqZfzYCywVM")
     .Build();
 
